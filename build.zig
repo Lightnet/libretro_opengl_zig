@@ -34,11 +34,23 @@ pub fn build(b: *std.Build) void {
     // Both files require HAVE_OPENGL to load the correct header sections.
     const c_flags = &[_][]const u8{
         "-DHAVE_OPENGL=1",
+        "-std=c99",
+        "-O3",
     };
 
     // 4. Compile libretro-common dependencies with flags
     lib.root_module.addCSourceFile(.{ .file = b.path("libretro-common/glsym/rglgen.c"), .flags = c_flags });
     lib.root_module.addCSourceFile(.{ .file = b.path("libretro-common/glsym/glsym_gl.c"), .flags = c_flags });
+
+    lib.root_module.addCSourceFile(.{ .file = b.path("libretro-common/file/file_path.c"), .flags = c_flags });
+    lib.root_module.addCSourceFile(.{ .file = b.path("libretro-common/string/stdstring.c"), .flags = c_flags });
+    lib.root_module.addCSourceFile(.{ .file = b.path("libretro-common/vfs/vfs_implementation.c"), .flags = c_flags });
+
+    // FIXES: Encodings, time mapping, and string fallback missing link symbols
+    lib.root_module.addCSourceFile(.{ .file = b.path("libretro-common/encodings/encoding_utf.c"), .flags = c_flags });
+    lib.root_module.addCSourceFile(.{ .file = b.path("libretro-common/compat/compat_strl.c"), .flags = c_flags });
+    lib.root_module.addCSourceFile(.{ .file = b.path("libretro-common/compat/fopen_utf8.c"), .flags = c_flags });
+    lib.root_module.addCSourceFile(.{ .file = b.path("libretro-common/time/rtime.c"), .flags = c_flags });
 
     // 5. Link system graphics libraries based on target
     if (target.result.os.tag == .windows) {

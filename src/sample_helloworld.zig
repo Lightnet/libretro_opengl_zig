@@ -15,89 +15,6 @@ var input_poll_cb: retro.retro_input_poll_t = null;
 var hw_render: retro.retro_hw_render_callback = undefined;
 
 // ============================================================================
-// Core Path Verification Logger
-// ============================================================================
-fn logRetroArchPaths(cb: retro.retro_environment_t) void {
-    std.log.info("--- Checking RetroArch Directory Architecture ---", .{});
-
-    const env_fn = cb.?;
-
-    // 1. Check SYSTEM_DIRECTORY (Usually holds emulator BIOS components)
-    var system_dir: ?[*:0]const u8 = null;
-    if (env_fn(retro.RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, @ptrCast(&system_dir))) {
-        if (system_dir) |dir| {
-            std.log.info("System Directory (BIOS): {s}", .{dir});
-        } else {
-            std.log.info("System Directory (BIOS): Defined but empty (default path).", .{});
-        }
-    } else {
-        std.log.err("Frontend failed or does not support GET_SYSTEM_DIRECTORY.", .{});
-    }
-
-    // 2. Check CORE_ASSETS_DIRECTORY (Holds custom core tools/fonts/bitmaps)
-    var assets_dir: ?[*:0]const u8 = null;
-    if (env_fn(retro.RETRO_ENVIRONMENT_GET_CORE_ASSETS_DIRECTORY, @ptrCast(&assets_dir))) {
-        if (assets_dir) |dir| {
-            std.log.info("Core Assets Directory  : {s}", .{dir});
-        } else {
-            std.log.info("Core Assets Directory  : Defined but empty (default path).", .{});
-        }
-    } else {
-        std.log.err("Frontend failed or does not support GET_CORE_ASSETS_DIRECTORY.", .{});
-    }
-
-    // 3. NEW: Check CONTENT_DIRECTORY (Directory where loaded games/ROMs reside)
-    var content_dir: ?[*:0]const u8 = null;
-    if (env_fn(retro.RETRO_ENVIRONMENT_GET_CONTENT_DIRECTORY, @ptrCast(&content_dir))) {
-        if (content_dir) |dir| {
-            std.log.info("Content Directory      : {s}", .{dir});
-        } else {
-            std.log.info("Content Directory      : Defined but empty (default path).", .{});
-        }
-    } else {
-        std.log.err("Frontend failed or does not support GET_CONTENT_DIRECTORY.", .{});
-    }
-
-    // 4. NEW: Check FILE_BROWSER_START_DIRECTORY (The menu's file browser default home)
-    var browser_dir: ?[*:0]const u8 = null;
-    if (env_fn(retro.RETRO_ENVIRONMENT_GET_FILE_BROWSER_START_DIRECTORY, @ptrCast(&browser_dir))) {
-        if (browser_dir) |dir| {
-            std.log.info("File Browser Start Dir : {s}", .{dir});
-        } else {
-            std.log.info("File Browser Start Dir : Defined but empty (default path).", .{});
-        }
-    } else {
-        std.log.err("Frontend failed or does not support GET_FILE_BROWSER_START_DIRECTORY.", .{});
-    }
-
-    // 5. NEW: Check LIBRETRO_PATH (The path to this core's own binary file)
-    var libretro_path: ?[*:0]const u8 = null;
-    if (env_fn(retro.RETRO_ENVIRONMENT_GET_LIBRETRO_PATH, @ptrCast(&libretro_path))) {
-        if (libretro_path) |path| {
-            std.log.info("Libretro Core Path     : {s}", .{path});
-        } else {
-            std.log.info("Libretro Core Path     : Defined but empty.", .{});
-        }
-    } else {
-        std.log.err("Frontend failed or does not support GET_LIBRETRO_PATH.", .{});
-    }
-
-    // 6. NEW: Check SAVE_DIRECTORY (Directory where game saves are stored)
-    var save_dir: ?[*:0]const u8 = null;
-    if (env_fn(retro.RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY, @ptrCast(&save_dir))) {
-        if (save_dir) |dir| {
-            std.log.info("Save Directory         : {s}", .{dir});
-        } else {
-            std.log.info("Save Directory         : Defined but empty (default path).", .{});
-        }
-    } else {
-        std.log.err("Frontend failed or does not support GET_SAVE_DIRECTORY.", .{});
-    }
-
-    std.log.info("-----------------------------------------------------", .{});
-}
-
-// ============================================================================
 // NEW: 8x8 Retro Font Binary Bitmap Atlas
 // ============================================================================
 // Each line of 8 pixels is represented by 1 byte (where a 1 bit is a filled pixel).
@@ -202,9 +119,6 @@ export fn retro_set_environment(cb: retro.retro_environment_t) callconv(.c) void
     if (cb) |c| {
         var no_rom = true;
         _ = c(retro.RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &no_rom);
-
-        // Run our structural path check immediately on startup
-        logRetroArchPaths(c);
     }
 }
 
